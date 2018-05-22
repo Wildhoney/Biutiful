@@ -12,12 +12,12 @@ const getTree = R.composeP(parseFile, readFile);
 
 async function main() {
 
-    const { argv } = yargs;
+    const { input, output } = yargs.argv;
 
     try {
 
         // Run all of the sanity checks for the passed arguments.
-        runAssertions(argv);
+        runAssertions(yargs.argv);
 
     } catch (err) {
 
@@ -35,21 +35,21 @@ async function main() {
         await Promise.all(meta.map(async ({ name, version, es, main }, index) => {
 
             // Copy all of the contents of the module into the `es_modules` directory.
-            const model = { name, version, filepath: es || main };
-            const input = path.join(output, await copyFile(argv.output, model));
+            const model = { name, version, filepath: es || main };  
+            const input = path.join(output, await copyFile(output, model));
 
             // Update the AST for the current file to point to the previously copied file.
             await updateImport(input, ast, imports[index]);
 
-            // Recursively walk through the imports, updating their ASTs as we go.
-            transform(input, output = './');
+            // // Recursively walk through the imports, updating their ASTs as we go.
+            return transform(input, output);
 
         }));
 
         // Update the current file with the updated AST.
         return updateFile(input, ast);
 
-    })(argv.input, argv.output);
+    })(input, output);
 
 }
 
