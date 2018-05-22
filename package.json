@@ -16,6 +16,7 @@
     "redux": "^4.0.0"
   },
   "dependencies": {
+    "get-installed-path": "^4.0.8",
     "pretty-error": "^2.1.1",
     "ramda": "^0.25.0",
     "yargs": "^11.0.0"
