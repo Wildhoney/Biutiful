@@ -17,7 +17,7 @@ export function parseFile(code) {
 }
 
 export function updateImport(filepath, ast, importExpression) {
-    importExpression.source.value = `./${filepath}`;
+    importExpression.source.value = `/${filepath}`;
 }
 
 export function updateFile(filepath, ast) {
