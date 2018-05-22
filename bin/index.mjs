@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 
-import fs from 'fs';
 import yargs from 'yargs';
 import R from 'ramda';
 import runAssertions from './utils/assertions.mjs';
@@ -14,7 +13,7 @@ const getImports = R.composeP(extractImports, parseFile, readFile);
 
 async function main() {
 
-    const { input, output } = yargs.argv;
+    const { input } = yargs.argv;
 
     try {
 

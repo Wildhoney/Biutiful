@@ -10,8 +10,17 @@
   "bin": {
     "biu": "node --experimental-modules ./bin/index.mjs $@"
   },
+  "scripts": {
+    "lint": "eslint ./bin/*.mjs ./bin/**/*.mjs"
+  },
   "devDependencies": {
     "@babel/core": "^7.0.0-beta.47",
+    "babel-eslint": "^8.2.3",
+    "eslint": "^4.19.1",
+    "eslint-config-airbnb": "~16.1.0",
+    "eslint-plugin-import": "~2.12.0",
+    "eslint-plugin-jsx-a11y": "~6.0.3",
+    "eslint-plugin-react": "~7.8.2",
     "redux": "^4.0.0"
   },
   "dependencies": {
