@@ -8,6 +8,7 @@ import { readFile, copyFile, makeDirectory } from './utils/filesystem.mjs';
 import { extractImports, parseFile, updateImport, updateFile } from './utils/ast.mjs';
 import parseMeta from './utils/meta.mjs';
 
+const dirname = 'es_modules';
 const getTree = R.composeP(parseFile, readFile);
 
 async function main() {
@@ -29,7 +30,7 @@ async function main() {
     try {
 
         // Create the `es_modules` directory in the specified `output` location.
-        await makeDirectory(path.join(output, 'es_modules'));
+        await makeDirectory(path.join(output, dirname));
 
     } catch (err) {}
 
@@ -56,7 +57,7 @@ async function main() {
         // Update the current file with the updated AST.
         return updateFile(input, ast);
 
-    })(input, path.join(output, 'es_modules'));
+    })(input, path.join(output, dirname));
 
 }
 
