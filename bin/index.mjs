@@ -2,18 +2,16 @@
 
 import yargs from 'yargs';
 import R from 'ramda';
-import runAssertions from './utils/assertions.mjs';
-import handleErrors from './utils/errors.mjs';
-import readFile from './utils/read.mjs';
-import parseFile from './utils/parse.mjs';
-import extractImports from './utils/extract.mjs';
+import { runAssertions, handleErrors } from './utils/helpers.mjs';
+import { readFile, copyFile } from './utils/filesystem.mjs';
+import { extractImports, parseFile } from './utils/ast.mjs';
 import getMeta from './utils/meta.mjs';
 
 const getImports = R.composeP(extractImports, parseFile, readFile);
 
 async function main() {
 
-    const { input } = yargs.argv;
+    const { input, output } = yargs.argv;
 
     try {
 
@@ -27,12 +25,14 @@ async function main() {
 
     }
 
-    const modules = await getImports(input);
-    const meta = await getMeta(modules);
+    (async function go() {
 
-    console.log(meta);
+        const modules = await getImports(input);
+        const meta = await getMeta(modules);
 
-    // modules.forEach
+        meta.map(node => copyFile(output, node));
+
+    })();
 
 }
 

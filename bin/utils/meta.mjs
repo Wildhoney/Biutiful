@@ -1,7 +1,7 @@
 import path from 'path';
 import npm from 'get-installed-path';
 import R from 'ramda';
-import readFile from './read';
+import { readFile } from './filesystem.mjs';
 
 const options = {
     local: true
