@@ -1,9 +1,6 @@
 import R from 'ramda';
 import babel from '@babel/core';
-
-const options = {
-    sourceType: 'module'
-};
+import { writeFile } from './filesystem.mjs';
 
 const isImport = R.propEq('type', 'ImportDeclaration');
 
@@ -16,5 +13,13 @@ export function extractImports(ast) {
 }
 
 export function parseFile(code) {
-    return babel.parse(code, options);
+    return babel.parse(code);
+}
+
+export function updateImport(filepath, ast, importExpression) {
+    importExpression.source.value = `./${filepath}`;
+}
+
+export function updateFile(filepath, ast) {
+    return writeFile(filepath, babel.transformFromAst(ast).code);
 }
