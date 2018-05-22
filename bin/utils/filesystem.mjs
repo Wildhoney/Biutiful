@@ -9,8 +9,7 @@ export function readFile(filepath) {
     return read(filepath, 'utf8');
 }
 
-export function copyFile(output, { version, es, main }) {
-    const { name } = path.parse(main);
+export function copyFile(output, { name, version, filepath }) {
     const filename = `${name}@${version}.js`;
-    return copy(es, path.join(output, filename));
+    return copy(filepath, path.join(output, filename));
 }

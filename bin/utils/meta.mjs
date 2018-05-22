@@ -27,7 +27,7 @@ function createModel(modulePath) {
 
 const getMeta = modulePath => R.composeP(
     createModel(modulePath),
-    R.pick(['version', 'main', 'module', 'js:next']),
+    R.pick(['version', 'name', 'main', 'module', 'js:next']),
     JSON.parse,
     () => readFile(`${modulePath}/package.json`),
 )();

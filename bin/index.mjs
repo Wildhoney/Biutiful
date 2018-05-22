@@ -25,14 +25,18 @@ async function main() {
 
     }
 
-    (async function go() {
+    (async function go(filepath) {
 
-        const modules = await getImports(input);
+        const modules = await getImports(filepath);
         const meta = await getMeta(modules);
 
-        meta.map(node => copyFile(output, node));
+        meta.map(({ name, version, es, main }) => {
+            const input = es || main;
+            copyFile(output, { name, version, filepath: es || main });
+            go(input);
+        });
 
-    })();
+    })(input);
 
 }
 
