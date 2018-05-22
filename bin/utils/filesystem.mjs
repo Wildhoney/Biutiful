@@ -5,6 +5,7 @@ import util from 'util';
 const read = util.promisify(fs.readFile);
 const copy = util.promisify(fs.copyFile);
 export const writeFile = util.promisify(fs.writeFile);
+export const makeDirectory = util.promisify(fs.mkdir);
 
 function getFilename({ name, version }) {
     return `${name}@${version}.js`;

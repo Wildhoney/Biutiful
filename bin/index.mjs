@@ -4,7 +4,7 @@ import path from 'path';
 import yargs from 'yargs';
 import R from 'ramda';
 import { runAssertions, handleErrors } from './utils/helpers.mjs';
-import { readFile, copyFile } from './utils/filesystem.mjs';
+import { readFile, copyFile, makeDirectory } from './utils/filesystem.mjs';
 import { extractImports, parseFile, updateImport, updateFile } from './utils/ast.mjs';
 import parseMeta from './utils/meta.mjs';
 
@@ -26,6 +26,13 @@ async function main() {
 
     }
 
+    try {
+
+        // Create the `es_modules` directory in the specified `output` location.
+        await makeDirectory(path.join(output, 'es_modules'));
+
+    } catch (err) {}
+
     (async function transform(input, output) {
 
         const ast = await getTree(input);
@@ -41,7 +48,7 @@ async function main() {
             // Update the AST for the current file to point to the previously copied file.
             await updateImport(input, ast, imports[index]);
 
-            // // Recursively walk through the imports, updating their ASTs as we go.
+            // Recursively walk through the imports, updating their ASTs as we go.
             return transform(input, output);
 
         }));
@@ -49,7 +56,7 @@ async function main() {
         // Update the current file with the updated AST.
         return updateFile(input, ast);
 
-    })(input, output);
+    })(input, path.join(output, 'es_modules'));
 
 }
 
