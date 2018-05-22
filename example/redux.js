@@ -1,3 +1,4 @@
-import * as x from 'redux';
+import * as a from 'redux';
+import * as b from './';
 
 console.log('Hi!');
