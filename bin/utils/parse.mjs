@@ -1,9 +1,9 @@
-import babylon from 'babylon';
+import babel from '@babel/core';
+
+const options = {
+    sourceType: 'module'
+};
 
 export default function parse(code) {
-
-    return babylon.parse(code, {
-        sourceType: 'module'
-    });
-
+    return babel.parse(code, options);
 }

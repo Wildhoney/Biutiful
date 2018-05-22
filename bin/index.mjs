@@ -8,7 +8,7 @@ import handleErrors from './utils/errors.mjs';
 import readFile from './utils/read.mjs';
 import parseFile from './utils/parse.mjs';
 import extractImports from './utils/extract.mjs';
-import findVersions from './utils/versions.mjs';
+import getMeta from './utils/meta.mjs';
 
 const getImports = R.composeP(extractImports, parseFile, readFile);
 
@@ -29,9 +29,9 @@ async function main() {
     }
 
     const modules = await getImports(input);
-    const versions = await findVersions(modules);
+    const meta = await getMeta(modules);
 
-    console.log(versions);
+    console.log(modules, meta);
 
     // modules.forEach
 
