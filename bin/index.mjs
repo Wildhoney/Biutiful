@@ -31,7 +31,7 @@ async function main() {
     const modules = await getImports(input);
     const meta = await getMeta(modules);
 
-    console.log(modules, meta);
+    console.log(meta);
 
     // modules.forEach
 
