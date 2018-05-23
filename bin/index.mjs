@@ -20,7 +20,7 @@ async function main() {
 
     const { argv } = yargs
         .usage('Usage: $0 --input [string] --output [string]')
-        .command('count', 'Transform imports into browser usable ECMAScript modules.')
+        .command('count', 'Biutiful transform ES imports into browser usable ECMAScript imports.')
         .default('output', './')
         .string('input')
         .string('output')
@@ -47,7 +47,7 @@ async function main() {
         return files.map(async file => {
 
             // Determine the output for the ES file, and copy the file from the input directory.
-            const output = path.join(argv.output, file.replace(argv.input, ''));
+            const output = path.join(argv.output, path.normalize(file).replace(path.normalize(argv.input), ''));
             await copyFile(file, output);
 
             (async function transform(input, module, settings) {
@@ -66,13 +66,13 @@ async function main() {
                         argv.output,
                         options.dirname,
                         model.version ? directory(model) : module,
-                        model.filepath.replace(model.module, '')
+                        path.normalize(model.filepath).replace(path.normalize(model.module), '')
                     );
 
                     // Copy the file and update the AST for the current file to point to the previously
                     // copied file.
                     await copyFile(input, output);
-                    await updateImport(output, ast, imports[index]);
+                    await updateImport(output, ast, imports[index], argv.output);
 
                     // Recursively walk through the imports, updating their ASTs as we go.
                     return transform(

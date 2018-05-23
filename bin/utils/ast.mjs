@@ -27,8 +27,8 @@ export function parseFile(code) {
     return babel.parse(code, options);
 }
 
-export function updateImport(filepath, ast, importExpression) {
-    importExpression.source.value = `/${filepath}`;
+export function updateImport(filepath, ast, importExpression, output) {
+    importExpression.source.value = `/${path.normalize(filepath).replace(path.normalize(output), '')}`;
 }
 
 export async function updateFile(filepath, ast) {
