@@ -6,7 +6,7 @@ import { readFile } from './filesystem.mjs';
 import { isThirdParty } from './ast.mjs';
 import { handleErrors } from './helpers.mjs';
 
-const omit = R.omit(['js:next']);
+const omit = R.omit(['main', 'js:next']);
 
 function createModel(module) {
 
@@ -15,7 +15,8 @@ function createModel(module) {
         const model = omit({
             ...meta,
             module,
-            filepath: path.join(module, meta.module || meta['js:next'] || null)
+            filepath: path.join(module, meta.module || meta['js:next'] || meta.main || null),
+            requiresTransform: !meta.module && !meta['js:next']
         });
 
         return model;
@@ -26,7 +27,7 @@ function createModel(module) {
 
 const getMeta = module => R.composeP(
     createModel(module),
-    R.pick(['version', 'name', 'module', 'js:next']),
+    R.pick(['version', 'name', 'main', 'module', 'js:next']),
     JSON.parse,
     () => readFile(`${module}/package.json`),
 )();

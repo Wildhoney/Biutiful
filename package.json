@@ -30,6 +30,7 @@
     "babel": "^6.23.0",
     "get-installed-path": "^4.0.8",
     "glob": "^7.1.2",
+    "lebab": "^2.7.7",
     "mkdirp": "^0.5.1",
     "pkg-dir": "^2.0.0",
     "pretty-error": "^2.1.1",

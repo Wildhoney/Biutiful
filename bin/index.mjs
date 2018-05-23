@@ -2,11 +2,12 @@
 
 import path from 'path';
 import yargs from 'yargs';
+import lebab from 'lebab';
 import yargonaut from 'yargonaut';
 import R from 'ramda';
 import glob from 'glob';
 import { runAssertions, handleErrors, directory } from './utils/helpers.mjs';
-import { readFile, copyFile } from './utils/filesystem.mjs';
+import { readFile, copyFile, writeFile } from './utils/filesystem.mjs';
 import { extractImports, parseFile, updateImport, updateFile, isThirdParty } from './utils/ast.mjs';
 import parseMeta from './utils/meta.mjs';
 import options from './options.mjs';
@@ -57,7 +58,7 @@ async function main() {
                 const meta = await parseMeta(imports, input, module);
 
                 await Promise.all(meta.map(async (model, index) => {
-                    
+
                     // Determine whether the current import is a module, or a local import relative to
                     // the current module.
                     const isLocalImport = !isThirdParty(imports[index]);
@@ -72,6 +73,17 @@ async function main() {
                     // Copy the file and update the AST for the current file to point to the previously
                     // copied file.
                     await copyFile(input, output);
+
+                    if (model.requiresTransform) {
+
+                        // Transform the copied file using Lebab if it's detected to be a non-ES module.
+                        const code = await readFile(output);
+                        await writeFile(output, lebab.transform(code, ['let', 'arrow']).code);
+
+                    }
+
+                    // const code = await readFile(output);
+                    // console.log(lebab.transform(code, []));
                     await updateImport(output, ast, imports[index], argv.output);
 
                     // Recursively walk through the imports, updating their ASTs as we go.
