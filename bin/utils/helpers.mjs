@@ -18,6 +18,6 @@ export function runAssertions({ input, output }) {
     assert(fs.lstatSync(output).isDirectory(), 'Output must be a directory.');
 }
 
-export function getFilename({ name, version }) {
-    return version ? `${name}_${version}.js` : `${name}.js`;
+export function directory({ name, version }) {
+    return version ? `${name}@${version}` : `${name}`;
 }

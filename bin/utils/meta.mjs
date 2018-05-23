@@ -2,20 +2,20 @@ import path from 'path';
 import npm from 'get-installed-path';
 import pkgDir from 'pkg-dir';
 import R from 'ramda';
-import { readFile, makeDirectory } from './filesystem.mjs';
+import { readFile } from './filesystem.mjs';
 import { isThirdParty } from './ast.mjs';
 import { handleErrors } from './helpers.mjs';
 
-const omit = R.omit(['module', 'js:next']);
+const omit = R.omit(['js:next']);
 
-function createModel(modulePath) {
+function createModel(module) {
 
     return meta => {
 
         const model = omit({
             ...meta,
-            es: path.join(modulePath, meta.module || meta['js:next'] || null),
-            main: path.join(modulePath, meta.main || null)
+            module,
+            filepath: path.join(module, meta.module || meta['js:next'] || null)
         });
 
         return model;
@@ -24,14 +24,14 @@ function createModel(modulePath) {
 
 }
 
-const getMeta = modulePath => R.composeP(
-    createModel(modulePath),
-    R.pick(['version', 'name', 'main', 'module', 'js:next']),
+const getMeta = module => R.composeP(
+    createModel(module),
+    R.pick(['version', 'name', 'module', 'js:next']),
     JSON.parse,
-    () => readFile(`${modulePath}/package.json`),
+    () => readFile(`${module}/package.json`),
 )();
 
-export default async function meta(ast, input, output, moduleName) {
+export default async function meta(ast, input, module) {
 
     const options = {
         local: true,
@@ -46,8 +46,8 @@ export default async function meta(ast, input, output, moduleName) {
 
                 // Attempt to find the installed path of the given dependency in the closest
                 // `node_modules` directory.
-                const modulePath = await npm.getInstalledPath(node.source.value, options);
-                return getMeta(modulePath);
+                const module = await npm.getInstalledPath(node.source.value, options);
+                return getMeta(module);
 
             } catch (err) {
 
@@ -58,16 +58,9 @@ export default async function meta(ast, input, output, moduleName) {
 
                 }
 
-                // Create the sub-directory for holding a module's files.
-                const subDirectoryPath = path.join(path.parse(output).dir, path.parse(moduleName).name);
-                await makeDirectory(subDirectoryPath);
-
-                // Attemmpt to find the directory relative from the input.
-                const { dir } = path.parse(input);
-                const file = path.join(dir, node.source.value);
-                const { name } = path.parse(node.source.value);
-
-                return { name, es: file, version: null };
+                // Resolve the output directory locally.
+                const output = path.join(path.parse(module.filepath).dir, node.source.value);
+                return { ...module, filepath: output };
 
             }
 

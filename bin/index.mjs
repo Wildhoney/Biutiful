@@ -5,9 +5,9 @@ import yargs from 'yargs';
 import yargonaut from 'yargonaut';
 import R from 'ramda';
 import glob from 'glob';
-import { runAssertions, handleErrors, getFilename } from './utils/helpers.mjs';
-import { readFile, copyFile, makeDirectory } from './utils/filesystem.mjs';
-import { extractImports, parseFile, updateImport, updateFile } from './utils/ast.mjs';
+import { runAssertions, handleErrors, directory } from './utils/helpers.mjs';
+import { readFile, copyFile } from './utils/filesystem.mjs';
+import { extractImports, parseFile, updateImport, updateFile, isThirdParty } from './utils/ast.mjs';
 import parseMeta from './utils/meta.mjs';
 import options from './options.mjs';
 
@@ -35,9 +35,6 @@ async function main() {
         // Run all of the sanity checks for the passed arguments.
         runAssertions(argv);
 
-        // Attempt to create the `es_modules` directory.
-        await makeDirectory(`${argv.output}/${options.dirname}`);
-
     } catch (err) {
 
         // Handle the errors gracefully with a prettier output.
@@ -47,41 +44,49 @@ async function main() {
 
     glob(`${argv.input}/${options.glob}`, {}, (_, files) => {
 
-        return files.map(input => {
+        return files.map(async file => {
 
-            (async function transform(input, output, moduleName, settings) {
+            // Determine the output for the ES file, and copy the file from the input directory.
+            const output = path.join(argv.output, file.replace(argv.input, ''));
+            await copyFile(file, output);
+
+            (async function transform(input, module, settings) {
 
                 const ast = await getTree(input);
                 const imports = extractImports(ast, settings.thirdPartyOnly);
-                const meta = await parseMeta(imports, input, output, moduleName);
+                const meta = await parseMeta(imports, input, module);
 
-                await Promise.all(meta.map(async ({ name, version, es, main }, index) => {
-    
-                    // Copy all of the contents of the module into the `es_modules` directory.
-                    const input = es || main;
-                    const model = { name, version, filepath: input };
+                await Promise.all(meta.map(async (model, index) => {
+                    
+                    // Determine whether the current import is a module, or a local import relative to
+                    // the current module.
+                    const isLocalImport = !isThirdParty(imports[index]);
+                    const input = model.filepath;
+                    const output = path.join(
+                        argv.output,
+                        options.dirname,
+                        model.version ? directory(model) : module,
+                        model.filepath.replace(model.module, '')
+                    );
 
-                    // Configure the output based on whether we have a version or not, which denotes
-                    // whether it's a module, or a file belonging to a module.
-                    const outputDirectory = version
-                        ? [argv.output, options.dirname]
-                        : [argv.output, options.dirname, path.parse(moduleName).name];
-                    const output = path.join(...outputDirectory, getFilename(model));
-
+                    // Copy the file and update the AST for the current file to point to the previously
+                    // copied file.
                     await copyFile(input, output);
-
-                    // Update the AST for the current file to point to the previously copied file.
                     await updateImport(output, ast, imports[index]);
 
                     // Recursively walk through the imports, updating their ASTs as we go.
-                    return transform(input, output, getFilename(model) || moduleName, { ...settings, thirdPartyOnly: false });
+                    return transform(
+                        output,
+                        isLocalImport ? { ...module, filepath: path.resolve(output) } : model,
+                        { ...settings, thirdPartyOnly: false }
+                    );
     
                 }));
     
                 // Update the current file with the updated AST.
-                return await updateFile(output, ast);
+                return await updateFile(input, ast);
     
-            })(input, `./${path.join(argv.output, input.replace(argv.input, ''))}`, null, defaultSettings);
+            })(output, null, defaultSettings);
 
         });
     });
