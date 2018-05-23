@@ -6,12 +6,14 @@ import { writeFile, makeDirectory } from './filesystem.mjs';
 
 const isImport = R.propEq('type', 'ImportDeclaration');
 
-function isThirdParty({ source }) {
+export function isThirdParty({ source }) {
     return /^[a-z0-9@]/i.test(source.value);
 }
 
-export function extractImports(ast) {
-    return ast.program.body.filter(isImport).filter(isThirdParty);
+export function extractImports(ast, thirdPartyOnly) {
+    return ast.program.body
+        .filter(isImport)
+        .filter(thirdPartyOnly ? isThirdParty : R.T);
 }
 
 export function parseFile(code) {

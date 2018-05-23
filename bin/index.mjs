@@ -12,6 +12,7 @@ import parseMeta from './utils/meta.mjs';
 import options from './options.mjs';
 
 const getTree = R.composeP(parseFile, readFile);
+const defaultSettings = { thirdPartyOnly: true };
 
 yargonaut.style('green');
 
@@ -48,18 +49,24 @@ async function main() {
 
         return files.map(input => {
 
-            (async function transform(input, output) {
+            (async function transform(input, output, moduleName, settings) {
 
                 const ast = await getTree(input);
-                const imports = extractImports(ast);
-                const meta = await parseMeta(imports);
+                const imports = extractImports(ast, settings.thirdPartyOnly);
+                const meta = await parseMeta(imports, input, output, moduleName);
 
                 await Promise.all(meta.map(async ({ name, version, es, main }, index) => {
     
                     // Copy all of the contents of the module into the `es_modules` directory.
                     const input = es || main;
                     const model = { name, version, filepath: input };
-                    const output = path.join(argv.output, options.dirname, getFilename(model));
+
+                    // Configure the output based on whether we have a version or not, which denotes
+                    // whether it's a module, or a file belonging to a module.
+                    const outputDirectory = version
+                        ? [argv.output, options.dirname]
+                        : [argv.output, options.dirname, path.parse(moduleName).name];
+                    const output = path.join(...outputDirectory, getFilename(model));
 
                     await copyFile(input, output);
 
@@ -67,14 +74,14 @@ async function main() {
                     await updateImport(output, ast, imports[index]);
 
                     // Recursively walk through the imports, updating their ASTs as we go.
-                    return transform(input, output);
+                    return transform(input, output, getFilename(model) || moduleName, { ...settings, thirdPartyOnly: false });
     
                 }));
     
                 // Update the current file with the updated AST.
                 return await updateFile(output, ast);
     
-            })(input, `./${path.join(argv.output, input.replace(argv.input, ''))}`);
+            })(input, `./${path.join(argv.output, input.replace(argv.input, ''))}`, null, defaultSettings);
 
         });
     });

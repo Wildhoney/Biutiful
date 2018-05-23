@@ -19,5 +19,5 @@ export function runAssertions({ input, output }) {
 }
 
 export function getFilename({ name, version }) {
-    return `${name}@${version}.js`;
+    return version ? `${name}_${version}.js` : `${name}.js`;
 }
