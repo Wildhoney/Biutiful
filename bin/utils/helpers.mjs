@@ -12,6 +12,7 @@ export function handleErrors(error) {
 }
 
 export function runAssertions({ input, output }) {
+
     assert(fs.lstatSync(input).isDirectory(), 'Input must be a directory.');
     assert(glob.sync(`${input}/${options.glob}`).length > 0, 'Input directory contains no matched files.');
     assert(fs.lstatSync(output).isDirectory(), 'Output must be a directory.');

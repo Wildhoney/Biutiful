@@ -2,6 +2,7 @@
 
 import path from 'path';
 import yargs from 'yargs';
+import yargonaut from 'yargonaut';
 import R from 'ramda';
 import glob from 'glob';
 import { runAssertions, handleErrors, getFilename } from './utils/helpers.mjs';
@@ -12,9 +13,21 @@ import options from './options.mjs';
 
 const getTree = R.composeP(parseFile, readFile);
 
+yargonaut.style('green');
+
 async function main() {
 
-    const { argv } = yargs;
+    const { argv } = yargs
+        .usage('Usage: $0 --input [string] --output [string]')
+        .command('count', 'Transform imports into browser usable ECMAScript modules.')
+        .default('output', './')
+        .string('input')
+        .string('output')
+        .alias('o', 'output')
+        .alias('i', 'input')
+        .describe('i', 'Input directory')
+        .describe('o', 'Output directory')
+        .demandOption(['input', 'output']);
 
     try {
 

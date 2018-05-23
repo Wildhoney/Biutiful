@@ -3,6 +3,7 @@ import npm from 'get-installed-path';
 import pkgDir from 'pkg-dir';
 import R from 'ramda';
 import { readFile } from './filesystem.mjs';
+import { handleErrors } from './helpers.mjs';
 
 const omit = R.omit(['module', 'js:next']);
 
@@ -37,8 +38,21 @@ export default async function meta(ast) {
     };
 
     return Promise.all(ast.map(async node => {
-        const modulePath = await npm.getInstalledPath(node.source.value, options);
-        return getMeta(modulePath);
+
+        try {
+
+            // Attempt to find the installed path of the given dependency in the closest
+            // `node_modules` directory.
+            const modulePath = await npm.getInstalledPath(node.source.value, options);
+            return getMeta(modulePath);
+
+        } catch (err) {
+            
+            // An error occurred in finding the dependency.
+            handleErrors(err);
+
+        }
+
     }));
 
 }
