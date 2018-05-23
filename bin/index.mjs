@@ -78,7 +78,7 @@ async function main() {
 
                         // Transform the copied file using Lebab if it's detected to be a non-ES module.
                         const code = await readFile(output);
-                        await writeFile(output, lebab.transform(code, ['let', 'arrow']).code);
+                        await writeFile(output, lebab.transform(code, options.config.lebab).code);
 
                     }
 

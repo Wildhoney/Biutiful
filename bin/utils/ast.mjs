@@ -3,15 +3,9 @@ import R from 'ramda';
 import { handleErrors } from './helpers.mjs';
 import babel from '@babel/core';
 import { writeFile, makeDirectory } from './filesystem.mjs';
+import options from '../options.mjs';
 
 const isImport = R.propEq('type', 'ImportDeclaration');
-
-const options = {
-    sourceType: 'module',
-    plugins: [
-        '@babel/plugin-syntax-jsx', '@babel/plugin-syntax-dynamic-import'
-    ]
-};
 
 export function isThirdParty({ source }) {
     return /^[a-z0-9@]/i.test(source.value);
@@ -24,7 +18,7 @@ export function extractImports(ast, thirdPartyOnly) {
 }
 
 export function parseFile(code) {
-    return babel.parse(code, options);
+    return babel.parse(code, options.config.babel);
 }
 
 export function updateImport(filepath, ast, importExpression, output) {
