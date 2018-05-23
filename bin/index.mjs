@@ -3,22 +3,26 @@
 import path from 'path';
 import yargs from 'yargs';
 import R from 'ramda';
-import { runAssertions, handleErrors } from './utils/helpers.mjs';
+import glob from 'glob';
+import { runAssertions, handleErrors, getFilename } from './utils/helpers.mjs';
 import { readFile, copyFile, makeDirectory } from './utils/filesystem.mjs';
 import { extractImports, parseFile, updateImport, updateFile } from './utils/ast.mjs';
 import parseMeta from './utils/meta.mjs';
+import options from './options.mjs';
 
-const dirname = 'es_modules';
 const getTree = R.composeP(parseFile, readFile);
 
 async function main() {
 
-    const { input, output } = yargs.argv;
+    const { argv } = yargs;
 
     try {
 
         // Run all of the sanity checks for the passed arguments.
-        runAssertions(yargs.argv);
+        runAssertions(argv);
+
+        // Attempt to create the `es_modules` directory.
+        await makeDirectory(`${argv.output}/${options.dirname}`);
 
     } catch (err) {
 
@@ -27,37 +31,40 @@ async function main() {
 
     }
 
-    try {
+    glob(`${argv.input}/${options.glob}`, {}, (_, files) => {
 
-        // Create the `es_modules` directory in the specified `output` location.
-        await makeDirectory(path.join(output, dirname));
+        return files.map(input => {
 
-    } catch (err) {}
+            (async function transform(input, output) {
 
-    (async function transform(input, output) {
+                const ast = await getTree(input);
+                const imports = extractImports(ast);
+                const meta = await parseMeta(imports);
 
-        const ast = await getTree(input);
-        const imports = extractImports(ast);
-        const meta = await parseMeta(imports);
+                await Promise.all(meta.map(async ({ name, version, es, main }, index) => {
+    
+                    // Copy all of the contents of the module into the `es_modules` directory.
+                    const input = es || main;
+                    const model = { name, version, filepath: input };
+                    const output = path.join(argv.output, options.dirname, getFilename(model));
 
-        await Promise.all(meta.map(async ({ name, version, es, main }, index) => {
+                    await copyFile(input, output);
 
-            // Copy all of the contents of the module into the `es_modules` directory.
-            const model = { name, version, filepath: es || main };  
-            const input = path.join(output, await copyFile(output, model));
+                    // Update the AST for the current file to point to the previously copied file.
+                    await updateImport(output, ast, imports[index]);
 
-            // Update the AST for the current file to point to the previously copied file.
-            await updateImport(input, ast, imports[index]);
+                    // Recursively walk through the imports, updating their ASTs as we go.
+                    return transform(input, output);
+    
+                }));
+    
+                // Update the current file with the updated AST.
+                return await updateFile(output, ast);
+    
+            })(input, `./${path.join(argv.output, input.replace(argv.input, ''))}`);
 
-            // Recursively walk through the imports, updating their ASTs as we go.
-            return transform(input, output);
-
-        }));
-
-        // Update the current file with the updated AST.
-        return updateFile(input, ast);
-
-    })(input, path.join(output, dirname));
+        });
+    });
 
 }
 

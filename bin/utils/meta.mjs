@@ -1,11 +1,8 @@
 import path from 'path';
 import npm from 'get-installed-path';
+import pkgDir from 'pkg-dir';
 import R from 'ramda';
 import { readFile } from './filesystem.mjs';
-
-const options = {
-    local: true
-};
 
 const omit = R.omit(['module', 'js:next']);
 
@@ -33,6 +30,11 @@ const getMeta = modulePath => R.composeP(
 )();
 
 export default async function meta(ast) {
+
+    const options = {
+        local: true,
+        cwd: await pkgDir()
+    };
 
     return Promise.all(ast.map(async node => {
         const modulePath = await npm.getInstalledPath(node.source.value, options);

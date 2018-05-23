@@ -1,5 +1,4 @@
 import * as a from 'redux';
-import * as b from 'ultradom';
-import * as c from './';
+import * as b from './';
 
-console.log('Hii!');
+console.log('index');
