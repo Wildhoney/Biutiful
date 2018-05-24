@@ -1,6 +1,6 @@
 {
   "name": "biutiful",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Biutiful is a clever little CLI tool for transforming npm dependency trees into JavaScript import/export modules.",
   "main": "bin/index.js",
   "repository": "git@github.com:Wildhoney/Biutiful.git",
