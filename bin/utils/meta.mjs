@@ -15,7 +15,7 @@ function createModel(module) {
         const model = omit({
             ...meta,
             module,
-            filepath: path.join(module, meta.module || meta['js:next'] || meta.main || null),
+            filepath: path.join(module, meta.module || meta['js:next'] || meta.main || './index.js'),
             requiresTransform: !meta.module && !meta['js:next']
         });
 

@@ -6,7 +6,7 @@ import lebab from 'lebab';
 import yargonaut from 'yargonaut';
 import R from 'ramda';
 import glob from 'glob';
-import { runAssertions, handleErrors, directory } from './utils/helpers.mjs';
+import { runAssertions, handleErrors, directory, assertExists } from './utils/helpers.mjs';
 import { readFile, copyFile, writeFile } from './utils/filesystem.mjs';
 import { extractImports, parseFile, updateImport, updateFile, isThirdParty } from './utils/ast.mjs';
 import parseMeta from './utils/meta.mjs';
@@ -57,7 +57,7 @@ async function main() {
                 const imports = extractImports(ast, settings.thirdPartyOnly);
                 const meta = await parseMeta(imports, input, module);
 
-                await Promise.all(meta.map(async (model, index) => {
+                await Promise.all(meta.filter(assertExists).map(async (model, index) => {
 
                     // Determine whether the current import is a module, or a local import relative to
                     // the current module.
