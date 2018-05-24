@@ -82,8 +82,7 @@ async function main() {
 
                     }
 
-                    // const code = await readFile(output);
-                    // console.log(lebab.transform(code, []));
+                    // Update the imports in the AST for the copied file.
                     await updateImport(output, ast, imports[index], argv.output);
 
                     // Recursively walk through the imports, updating their ASTs as we go.
