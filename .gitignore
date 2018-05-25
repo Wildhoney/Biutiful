@@ -1,5 +1,6 @@
-# npm
+# npm/yarn
 node_modules
+yarn-error.log
 
 # biutiful
 es_modules
