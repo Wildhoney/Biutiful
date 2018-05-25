@@ -8,7 +8,7 @@
   "license": "MIT",
   "private": false,
   "bin": {
-    "biu": "node --experimental-modules ./bin/index.mjs $@"
+    "biu": "./bin/index.mjs"
   },
   "scripts": {
     "lint": "eslint ./bin/*.mjs ./bin/**/*.mjs"
