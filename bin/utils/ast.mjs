@@ -22,7 +22,7 @@ export function parseFile(code) {
 }
 
 export function updateImport(filepath, ast, importExpression, output) {
-    importExpression.source.value = `/${path.normalize(filepath).replace(path.normalize(output), '')}`;
+    importExpression.source.value = path.normalize(`/${path.normalize(filepath).replace(path.normalize(output), '')}`);
 }
 
 export async function updateFile(filepath, ast) {
