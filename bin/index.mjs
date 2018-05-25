@@ -1,4 +1,4 @@
-#!/usr/bin/env NODE_NO_WARNINGS=1 node --experimental-modules
+#!/usr/bin/env node --experimental-modules --no-warnings
 
 import path from 'path';
 import yargs from 'yargs';
