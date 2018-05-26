@@ -32,11 +32,11 @@ const getMeta = module => R.composeP(
     () => readFile(`${module}/package.json`),
 )();
 
-export default async function meta(ast, input, module) {
+export default async function meta(ast, input, module, argv) {
 
     const options = {
         local: true,
-        cwd: await pkgDir()
+        cwd: await pkgDir(path.resolve(argv.input))
     };
 
     return Promise.all(ast.map(async node => {

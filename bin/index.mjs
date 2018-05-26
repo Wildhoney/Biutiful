@@ -55,7 +55,7 @@ async function main() {
 
                 const ast = await getTree(input);
                 const imports = extractImports(ast, settings.thirdPartyOnly);
-                const meta = await parseMeta(imports, input, module);
+                const meta = await parseMeta(imports, input, module, argv);
 
                 await Promise.all(meta.filter(assertExists).map(async (model, index) => {
 
